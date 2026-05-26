@@ -46,26 +46,7 @@
   --container-width: 1200px;
 }
 
-/* Red Theme Variables */
-[data-theme="light"] {
-  --bg-primary: hsl(355, 30%, 8%);
-  --bg-secondary: hsl(355, 25%, 12%);
-  --bg-tertiary: hsl(355, 20%, 16%);
-
-  --text-primary: hsl(0, 0%, 98%);
-  --text-secondary: hsl(355, 15%, 75%);
-  --text-muted: hsl(355, 10%, 55%);
-
-  --accent-primary: hsl(355, 95%, 55%);    /* Crimson Red Neon */
-  --accent-secondary: hsl(20, 95%, 50%);   /* Orange/Amber Neon */
-  --accent-glow: hsla(355, 95%, 55%, 0.18);
-  --accent-gradient: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-
-  --glass-bg: rgba(35, 12, 15, 0.65);
-  --glass-border: rgba(255, 100, 100, 0.1);
-  --glass-border-hover: rgba(255, 100, 100, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(100, 0, 10, 0.35);
-}
+/* Color variables are managed dynamically on scroll (Red -> Yellow -> Blue) */
 
 /* CSS Reset */
 *,
@@ -317,7 +298,7 @@ a {
 .theme-toggle-btn {
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 8px;
   border-radius: var(--radius-sm);
@@ -325,23 +306,18 @@ a {
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .theme-toggle-btn:hover {
   background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
-.theme-toggle-btn .sun-icon {
-  display: none;
-}
-
-[data-theme="light"] .theme-toggle-btn .moon-icon {
-  display: none;
-}
-
-[data-theme="light"] .theme-toggle-btn .sun-icon {
-  display: block;
+.theme-toggle-btn.active {
+  color: var(--accent-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .nav-toggle {

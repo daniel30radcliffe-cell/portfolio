@@ -11,29 +11,118 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * 1. Dark/Light Theme Handler
+ * 1. Chromatic Scroll Theme Handler (Red -> Yellow -> Blue)
  */
+let scrollListenerActive = false;
+
+function handleScrollColors() {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  if (maxScroll <= 0) return;
+  const scrollPercent = window.scrollY / maxScroll;
+
+  let hue, bgHue, bgSat, bgLight;
+  let r, g, b;
+
+  if (scrollPercent <= 0.5) {
+    const t = scrollPercent / 0.5; // normalized 0 -> 1
+    
+    // Hue: Red (355 / -5) to Yellow (45)
+    hue = -5 + (45 - (-5)) * t;
+    bgHue = -5 + (45 - (-5)) * t;
+    bgSat = 30 + (22 - 30) * t;
+    bgLight = 7 + (5 - 7) * t;
+
+    // Glass color (RGB): Red glass (35, 12, 15) to Yellow glass (28, 22, 12)
+    r = Math.round(35 + (28 - 35) * t);
+    g = Math.round(12 + (22 - 12) * t);
+    b = Math.round(15 + (12 - 15) * t);
+  } else {
+    const t = (scrollPercent - 0.5) / 0.5; // normalized 0 -> 1
+    
+    // Hue: Yellow (45) to Blue (210)
+    hue = 45 + (210 - 45) * t;
+    bgHue = 45 + (210 - 45) * t;
+    bgSat = 22 + (28 - 22) * t;
+    bgLight = 5 + (6 - 5) * t;
+
+    // Glass color (RGB): Yellow glass (28, 22, 12) to Blue glass (12, 18, 28)
+    r = Math.round(28 + (12 - 28) * t);
+    g = Math.round(22 + (18 - 22) * t);
+    b = Math.round(12 + (28 - 12) * t);
+  }
+
+  // Normalize hue
+  hue = (Math.round(hue) + 360) % 360;
+  bgHue = (Math.round(bgHue) + 360) % 360;
+  bgSat = Math.round(bgSat);
+  bgLight = Math.round(bgLight);
+
+  const root = document.documentElement;
+  root.style.setProperty('--accent-primary', `hsl(${hue}, 95%, 55%)`);
+  root.style.setProperty('--accent-secondary', `hsl(${(hue + 35) % 360}, 95%, 50%)`);
+  root.style.setProperty('--accent-glow', `hsla(${hue}, 95%, 55%, 0.18)`);
+  
+  root.style.setProperty('--bg-primary', `hsl(${bgHue}, ${bgSat}%, ${bgLight}%)`);
+  root.style.setProperty('--bg-secondary', `hsl(${bgHue}, ${bgSat}%, ${bgLight + 3}%)`);
+  root.style.setProperty('--bg-tertiary', `hsl(${bgHue}, ${bgSat}%, ${bgLight + 6}%)`);
+  
+  root.style.setProperty('--glass-bg', `rgba(${r}, ${g}, ${b}, 0.65)`);
+  root.style.setProperty('--glass-border', `hsla(${hue}, 95%, 70%, 0.1)`);
+  root.style.setProperty('--glass-border-hover', `hsla(${hue}, 95%, 70%, 0.18)`);
+  root.style.setProperty('--glass-shadow', `0 8px 32px 0 hsla(${hue}, 95%, 15%, 0.3)`);
+}
+
+function enableScrollTheme() {
+  if (!scrollListenerActive) {
+    window.addEventListener('scroll', handleScrollColors);
+    scrollListenerActive = true;
+  }
+  handleScrollColors();
+  document.getElementById('theme-toggle').classList.add('active');
+}
+
+function disableScrollTheme() {
+  if (scrollListenerActive) {
+    window.removeEventListener('scroll', handleScrollColors);
+    scrollListenerActive = false;
+  }
+  document.getElementById('theme-toggle').classList.remove('active');
+  
+  const root = document.documentElement;
+  root.style.removeProperty('--accent-primary');
+  root.style.removeProperty('--accent-secondary');
+  root.style.removeProperty('--accent-glow');
+  root.style.removeProperty('--bg-primary');
+  root.style.removeProperty('--bg-secondary');
+  root.style.removeProperty('--bg-tertiary');
+  root.style.removeProperty('--glass-bg');
+  root.style.removeProperty('--glass-border');
+  root.style.removeProperty('--glass-border-hover');
+  root.style.removeProperty('--glass-shadow');
+}
+
 function initTheme() {
   const themeToggle = document.getElementById('theme-toggle');
   
-  // Check for saved theme preference, otherwise check system preference
-  const savedTheme = localStorage.getItem('theme');
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Chromatic scroll theme is enabled by default
+  let scrollThemeActive = localStorage.getItem('scroll-theme') !== 'disabled';
   
-  if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
-    document.documentElement.setAttribute('data-theme', 'light');
+  if (scrollThemeActive) {
+    enableScrollTheme();
   } else {
-    document.documentElement.removeAttribute('data-theme');
+    disableScrollTheme();
   }
 
   themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    if (currentTheme === 'light') {
-      document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'dark');
+    scrollThemeActive = !scrollThemeActive;
+    if (scrollThemeActive) {
+      localStorage.setItem('scroll-theme', 'enabled');
+      enableScrollTheme();
+      showToast('Effetto Scorrimento Cromatico attivato!');
     } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
+      localStorage.setItem('scroll-theme', 'disabled');
+      disableScrollTheme();
+      showToast('Tema classico Aether (Viola/Ciano) ripristinato!');
     }
   });
 }
